@@ -42,7 +42,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
  // =================================Timer
 
-    const deadLine = '2021-10-10T19:00:00';
+    const deadLine = '2021-11-11T00:00:00';
 
     function getTimeRemaining(endtime){
         let total = Date.parse(endtime) - new Date(),
@@ -100,8 +100,7 @@ window.addEventListener('DOMContentLoaded', () => {
 // =================================ModalWindow
 
     const trigerModal = document.querySelectorAll('[data-modal]'),
-          modal = document.querySelector('.modal'),
-          closeModal = modal.querySelector('[data-close]');
+          modal = document.querySelector('.modal');
 
 
     function openModal() {
@@ -128,7 +127,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
         window.addEventListener('scroll', showModalByScroll);  
 
-        // modalTimerID = setTimeout(openModal, 5000);
+        modalTimerID = setTimeout(openModal, 50000);
     }
 
     function closedModal() {
@@ -137,8 +136,7 @@ window.addEventListener('DOMContentLoaded', () => {
         document.body.style.overflow = '';
     }
 
-    function waysClosingWindow(selector){
-        selector.addEventListener('click', closedModal);
+    function waysClosingWindow(){
 
         window.addEventListener('keydown', (e) => {
             if(e.key === 'Escape' && modal.matches('.show')){
@@ -147,7 +145,7 @@ window.addEventListener('DOMContentLoaded', () => {
         });
 
         modal.addEventListener('click', (e) => {
-            if(e.target == modal){
+            if(e.target == modal || e.target.getAttribute('data-close') == ''){
                 closedModal();
             }
         });
@@ -155,7 +153,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     
     waysOpenWindow(trigerModal);
-    waysClosingWindow(closeModal);
+    waysClosingWindow();
 
 // =================================CreateCardProduct
 
@@ -181,12 +179,13 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
     class CardProduct {
-        constructor(src, alt, title, text, price, parent) {
+        constructor(src, alt, title, text, price, parent, ...classes) {
             this.src = src;
             this.alt = alt;
             this.title = title;
             this.text = text;
             this.price = price;
+            this.classes = classes;
             this.parent = document.querySelector(parent);
             this.transfer = 72;
             this.chengeToRUB();
@@ -198,7 +197,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
         setCard() {
             const menuItem = document.createElement('div');
-            menuItem.classList.add('menu__item');
+            
+            if(this.classes.length === 0){
+                this.classes = 'menu__item';
+                menuItem.classList.add(this.classes);
+            } else{
+                this.classes.forEach( className => menuItem.classList.add(className));
+            }   
+
             this.parent.append(menuItem);
 
             menuItem.innerHTML = `<img src=${this.src} alt=${this.alt}>
@@ -212,8 +218,81 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-new CardProduct(srcCont[0], altCont[0], titleCont[0], textCont[0], priceCont[0], '.menu__field .container').setCard();
-new CardProduct(srcCont[1], altCont[1], titleCont[1], textCont[1], priceCont[1], '.menu__field .container').setCard();
-new CardProduct(srcCont[2], altCont[2], titleCont[2], textCont[2], priceCont[2], '.menu__field .container').setCard();
+  new CardProduct(srcCont[0], altCont[0], titleCont[0], textCont[0], priceCont[0], '.menu__field .container').setCard();
+  new CardProduct(srcCont[1], altCont[1], titleCont[1], textCont[1], priceCont[1], '.menu__field .container').setCard();
+  new CardProduct(srcCont[2], altCont[2], titleCont[2], textCont[2], priceCont[2], '.menu__field .container').setCard();
 
+// =================================postServer
+
+    const forms = document.querySelectorAll('form');
+
+    const formMassage = {
+        done: 'Спасибо за заявку, мы с вами свяжемся!',
+        loaded: 'img/spinner/spinner.svg',
+        error: 'Не известная ошибка, попробуйте позже'
+    };
+
+    forms.forEach( form => {
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const statusMessage = document.createElement('img');
+            statusMessage.src = formMassage.loaded;
+            statusMessage.style.cssText = `
+                display: block;
+                margin: 0 auto;`;
+            form.insertAdjacentElement('afterend',statusMessage);
+
+            const reqest = new XMLHttpRequest();
+            reqest.open('POST', 'server.php');
+            reqest.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+
+            const formData = new FormData(form);
+
+            const jsonObj = {};
+            formData.forEach((item, key) => {
+                jsonObj[key] = item;
+            });
+            reqest.send(JSON.stringify(jsonObj));
+
+            // reqest.send(formData);
+
+            reqest.addEventListener('load', () => {
+                if(reqest.status === 200){
+                    showThanksModal(formMassage.done);
+                    console.log(reqest.response);
+                    statusMessage.remove();
+                    form.reset();
+                } else {
+                    showThanksModal(formMassage.error);
+                }
+
+            });
+
+        });
+    });
+
+    function showThanksModal(message){
+        const prevModalDialog = document.querySelector('.modal__dialog');
+        prevModalDialog.classList.add('hide');
+
+        openModal();
+
+        const newModalDialog = document.createElement('div');
+        newModalDialog.classList.add('modal__dialog');
+        newModalDialog.innerHTML = `
+            <div class="modal__content">
+                <div class="modal__title">${message}</div>
+                <div data-close class="modal__close">&times;</div>
+            </div>`;
+
+        document.querySelector('.modal').append(newModalDialog);
+
+        setTimeout( () => {
+            newModalDialog.remove();
+            prevModalDialog.classList.remove('hide');
+
+            closedModal();
+        }, 4000);
+    }
 });

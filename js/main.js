@@ -243,30 +243,44 @@ window.addEventListener('DOMContentLoaded', () => {
                 margin: 0 auto;`;
             form.insertAdjacentElement('afterend',statusMessage);
 
-            const reqest = new XMLHttpRequest();
-            reqest.open('POST', 'server.php');
-            reqest.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+            // const reqest = new XMLHttpRequest();
+            // reqest.open('POST', 'server.php');
+            // reqest.setRequestHeader('Content-type', 'application/json; charset=utf-8');
 
             const formData = new FormData(form);
 
-            const jsonObj = {};
-            formData.forEach((item, key) => {
-                jsonObj[key] = item;
-            });
-            reqest.send(JSON.stringify(jsonObj));
+            // const jsonObj = {};
+            // formData.forEach((item, key) => {
+            //     jsonObj[key] = item;
+            // });
+            // reqest.send(JSON.stringify(jsonObj));
 
             // reqest.send(formData);
 
-            reqest.addEventListener('load', () => {
-                if(reqest.status === 200){
-                    showThanksModal(formMassage.done);
-                    console.log(reqest.response);
-                    statusMessage.remove();
-                    form.reset();
-                } else {
-                    showThanksModal(formMassage.error);
-                }
+            // reqest.addEventListener('load', () => {
+            //     if(reqest.status === 200){
+            //         showThanksModal(formMassage.done);
+            //         console.log(reqest.response);
+            //         statusMessage.remove();
+            //         form.reset();
+            //     } else {
+            //         showThanksModal(formMassage.error);
+            //     }
 
+            // });
+
+            fetch('server.php', {
+                method: 'POST',
+                body: formData
+            }).then(body => body.text())
+            .then((data) => {
+                console.log(data);
+                showThanksModal(formMassage.done);
+                statusMessage.remove();
+            }).catch(() => {
+                showThanksModal(formMassage.error);
+            }).finally(() => {
+                form.reset();
             });
 
         });

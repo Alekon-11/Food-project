@@ -232,7 +232,23 @@ window.addEventListener('DOMContentLoaded', () => {
         error: 'Не известная ошибка, попробуйте позже'
     };
 
-    forms.forEach( form => {
+    forms.forEach( item => {
+        BindPostData(item);
+    });
+
+    const postData = async (url, body) => {
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-type': 'application/json'
+            },
+            body: body 
+        });
+
+        return await res.json();
+    };
+
+    function BindPostData(form) {
         form.addEventListener('submit', (e) => {
             e.preventDefault();
 
@@ -243,36 +259,16 @@ window.addEventListener('DOMContentLoaded', () => {
                 margin: 0 auto;`;
             form.insertAdjacentElement('afterend',statusMessage);
 
-            // const reqest = new XMLHttpRequest();
-            // reqest.open('POST', 'server.php');
-            // reqest.setRequestHeader('Content-type', 'application/json; charset=utf-8');
-
             const formData = new FormData(form);
 
-            // const jsonObj = {};
-            // formData.forEach((item, key) => {
-            //     jsonObj[key] = item;
-            // });
-            // reqest.send(JSON.stringify(jsonObj));
+            const jsonBody = JSON.stringify(Object.fromEntries(formData.entries()));
 
-            // reqest.send(formData);
-
-            // reqest.addEventListener('load', () => {
-            //     if(reqest.status === 200){
-            //         showThanksModal(formMassage.done);
-            //         console.log(reqest.response);
-            //         statusMessage.remove();
-            //         form.reset();
-            //     } else {
-            //         showThanksModal(formMassage.error);
-            //     }
-
+            // const jsonBody = {};
+            // formData.forEach((value, key) => {
+            //     jsonBody[key] = value;
             // });
 
-            fetch('server.php', {
-                method: 'POST',
-                body: formData
-            }).then(body => body.text())
+            postData('http://localhost:3000/requests', jsonBody)
             .then((data) => {
                 console.log(data);
                 showThanksModal(formMassage.done);
@@ -284,7 +280,7 @@ window.addEventListener('DOMContentLoaded', () => {
             });
 
         });
-    });
+    }
 
     function showThanksModal(message){
         const prevModalDialog = document.querySelector('.modal__dialog');

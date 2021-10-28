@@ -60,6 +60,14 @@ window.addEventListener('DOMContentLoaded', () => {
         };
     }
 
+    function getZero(num){
+        if(num >= 0 && num < 10){
+            return `0${num}`;
+        } else {
+            return num;
+        }
+    }
+
     function setClock(selector, endtime){
         const timer = document.querySelector(selector),
               days = timer.querySelector('#days'),
@@ -70,13 +78,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
         updateClock();
 
-        function getZero(num){
-            if(num >= 0 && num < 10){
-                return `0${num}`;
-            } else {
-                return num;
-            }
-        }
+        
 
         function updateClock(){
             const t = getTimeRemaining(endtime);
@@ -157,27 +159,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // =================================CreateCardProduct
 
-// =================================ModalWindow
-
-    const srcCont = ['img/tabs/vegy.jpg', 'img/tabs/elite.jpg', 'img/tabs/post.jpg'],
-          altCont = ['vegy', 'elite', 'post'],
-          titleCont = ['Меню "Фитнес"', 'Меню “Премиум”', 'Меню "Постное"'],
-          textCont = [`Меню "Фитнес" - это новый подход к приготовлению блюд: больше свежих овощей и фруктов. 
-                Продукт активных и здоровых людей. Это абсолютно новый продукт
-                с оптимальной ценой и высоким качествoм!`, 
-
-                `В меню “Премиум” мы используем не только красивый дизайн упаковки, 
-                но и качественное исполнение блюд. Красная рыба, морепродукты, 
-                фрукты - ресторанное меню без похода в ресторан!`, 
-
-                `Меню “Постное” - это тщательный подбор ингредиентов: 
-                полное отсутствие продуктов животного происхождения, 
-                молоко из миндаля, овса, кокоса или гречки, 
-                правильное количество белков за счет тофу и импортных вегетарианских стейков.`
-            ],
-          priceCont = [11, 20, 16];
-
-
     class CardProduct {
         constructor(src, alt, title, text, price, parent, ...classes) {
             this.src = src;
@@ -218,9 +199,31 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-  new CardProduct(srcCont[0], altCont[0], titleCont[0], textCont[0], priceCont[0], '.menu__field .container').setCard();
-  new CardProduct(srcCont[1], altCont[1], titleCont[1], textCont[1], priceCont[1], '.menu__field .container').setCard();
-  new CardProduct(srcCont[2], altCont[2], titleCont[2], textCont[2], priceCont[2], '.menu__field .container').setCard();
+    const getResource = async (url) => {
+        const req = await fetch(url);
+        
+        if(!req.ok){
+            throw new Error();
+        }
+
+        return await req.json();
+    };
+
+    getResource('http://localhost:3000/menu')
+        .then(data => {
+            data.forEach( ({img, altimg, title, descr, price}) => {
+                new CardProduct(img, altimg, title, descr, price, '.menu__field .container').setCard();
+            });
+        });
+
+    // axios.get('http://localhost:3000/menu')
+    //     .then(db => {
+    //         db.data.forEach( ({img, altimg, title, descr, price}) => {
+    //                 new CardProduct(img, altimg, title, descr, price, '.menu__field .container').setCard();
+    //             });
+    //     });
+    
+
 
 // =================================postServer
 
@@ -245,6 +248,12 @@ window.addEventListener('DOMContentLoaded', () => {
             body: body 
         });
 
+        if(!res.ok){
+            throw new Error(console.log(`Could not fetch ${url}, status: ${res.status}`));
+        } else {
+            console.log(`OK ${url}, status: ${res.status}`);
+        }
+
         return await res.json();
     };
 
@@ -262,11 +271,6 @@ window.addEventListener('DOMContentLoaded', () => {
             const formData = new FormData(form);
 
             const jsonBody = JSON.stringify(Object.fromEntries(formData.entries()));
-
-            // const jsonBody = {};
-            // formData.forEach((value, key) => {
-            //     jsonBody[key] = value;
-            // });
 
             postData('http://localhost:3000/requests', jsonBody)
             .then((data) => {
@@ -305,4 +309,135 @@ window.addEventListener('DOMContentLoaded', () => {
             closedModal();
         }, 4000);
     }
+
+// ------------------------slider const
+
+    const sliderPrev = document.querySelector('.offer__slider-prev');
+    const sliderNext = document.querySelector('.offer__slider-next');
+    const allSlide = document.querySelectorAll('.offer__slide');
+    const sliderCurrent = document.querySelector('#current');
+    const sliderTotal = document.querySelector('#total');
+    const sliderWrapper = document.querySelector('.offer__slider-wrapper');
+    const sliderParent = document.querySelector('.offer__slider-inner');
+
+// ------------------------slider easy
+
+     // let sliderIndex = 1;
+
+    // sliderTotal.textContent = getZero(allSlide.length);
+
+    // showClider(sliderIndex);
+
+    // function showClider(i) {
+    //     allSlide.forEach(item => item.classList.add('hide'));
+
+    //     allSlide[i - 1].classList.remove('hide');
+    //     sliderCurrent.textContent = getZero(i);
+    // }
+
+    // sliderNext.addEventListener('click', () => {
+    //     sliderIndex += 1;
+
+    //     if(sliderIndex > allSlide.length){
+    //         sliderIndex = 1;
+    //     }
+
+    //     showClider(sliderIndex);
+    // });
+
+    // sliderPrev.addEventListener('click', () => {
+    //     sliderIndex -= 1;
+
+    //     if(sliderIndex < 1){
+    //         sliderIndex = allSlide.length;
+    //     }
+
+    //     showClider(sliderIndex);
+    // });
+
+// ------------------------slider medium
+
+    //  let slide = 2;
+    //  let scrollSlide = 2;
+    //  let position = 0;
+    //  const showSlide = sliderParent.clientWidth / slide;
+    //  const scrollPosit = showSlide * scrollSlide;
+ 
+    //  sliderParent.style.cssText =`
+    //                                display: flex;
+    //                                transition: .2s ease-in-out;
+    //                              `;
+ 
+    //  sliderWrapper.style.overflow = 'hidden';
+ 
+    //  allSlide.forEach( item => {
+    //      item.style.minWidth = showSlide + 'px';
+    //  });
+ 
+    //  sliderNext.addEventListener('click', () => {
+    //      position -= scrollPosit;
+
+    //      if(position <= -sliderParent.scrollWidth){
+    //             position = 0;
+    //      }
+ 
+    //      sliderParent.style.transform = `translateX(${position}px)`;
+    //  });
+ 
+    //  sliderPrev.addEventListener('click', () => {
+    //      position += scrollPosit;
+
+    //      if(position > 0){
+    //         position = -(sliderParent.scrollWidth - showSlide);
+    //     }  
+ 
+    //      sliderParent.style.transform = `translateX(${position}px)`;
+    //  });
+
+
+    //  let slide = 2;
+    //  let scrollSlide = 2;
+    let sliderIndex = 1;
+    let position = 0;
+    const scrollPosit = sliderParent.clientWidth;
+ 
+    sliderTotal.textContent = getZero(allSlide.length);
+    sliderParent.style.cssText =`
+                                display: flex;
+                                transition: .2s ease-in-out;
+                                `;
+
+    sliderWrapper.style.overflow = 'hidden';
+    
+    allSlide.forEach( item => {
+        item.style.minWidth = scrollPosit + 'px';
+    });
+
+    sliderNext.addEventListener('click', () => {
+        sliderIndex += 1;
+        position -= scrollPosit;
+
+        if(position <= -sliderParent.scrollWidth){
+            position = 0;
+            sliderIndex = 1;
+        }
+ 
+        sliderParent.style.transform = `translateX(${position}px)`;
+        sliderCurrent.textContent = getZero(sliderIndex);
+    });
+ 
+    sliderPrev.addEventListener('click', () => {
+        sliderIndex -= 1;
+        position += scrollPosit;
+
+        if(position > 0){
+            position = -(sliderParent.scrollWidth - scrollPosit);
+            sliderIndex = allSlide.length;
+        }  
+ 
+        sliderParent.style.transform = `translateX(${position}px)`;
+        sliderCurrent.textContent = getZero(sliderIndex);
+    });
+    
 });
+  
